@@ -1,0 +1,16 @@
+{
+  "name": "wedding-gallery",
+  "version": "1.0.0",
+  "description": "Photo & video gallery with upload/download, pure JS frontend, filesystem storage, Dockerized.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "NODE_ENV=development node server.js"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^4.19.2",
+    "mime-types": "^2.1.35",
+    "multer": "^1.4.5-lts.1"
+  }
+}

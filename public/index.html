@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Taline & David - Hochzeit</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <!-- Optional: better font rendering -->
+  <meta name="color-scheme" content="dark light">
+</head>
+<body>
+  <!-- Page wrapper for centered content and nicer max-width -->
+  <div class="container">
+
+    <header class="header">
+      <div class="title-card" role="img" aria-label="Taline and David wedding gallery">
+        <h2 class="title">Taline &amp; David — Hochzeit</h2>
+        <p class="subtitle">Photo &amp; Video Gallery</p>
+      </div>
+
+      <!-- Decorative divider -->
+      <div class="divider" aria-hidden="true"></div>
+    </header>
+
+    <main class="main">
+      <section id="gallery" class="gallery" aria-live="polite" aria-busy="false"></section>
+      <!-- Infinite-scroll sentinel -->
+      <div id="sentinel" class="sentinel" aria-hidden="true"></div>
+    </main>
+
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fab">
+    <button
+      id="fabBtn"
+      class="fab-btn"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls="fabMenu"
+      title="Menu"
+    >
+      ☰
+      <span class="sr-only">Open menu</span>
+    </button>
+    <div id="fabMenu" class="fab-menu" role="menu" aria-hidden="true">
+      <button role="menuitem" id="downloadAllBtn" class="fab-item">Download All</button>
+      <button role="menuitem" id="uploadBtn" class="fab-item">Upload</button>
+    </div>
+    <input id="fileInput" type="file" multiple accept="image/*,video/*" hidden />
+  </div>
+
+  <!-- Lightbox Modal -->
+  <div id="lightbox" class="modal" aria-hidden="true" role="dialog" aria-label="Media viewer">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content shadow-xl">
+      <button class="close" id="lightboxClose" aria-label="Close">×</button>
+      <div id="lightboxBody"></div>
+    </div>
+  </div>
+
+  <!-- Upload Progress Modal -->
+  <div id="progressModal" class="modal" aria-hidden="true" role="dialog" aria-label="Upload progress">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content shadow-xl">
+      <h3>Uploading files…</h3>
+      <p class="warn">Do not lock your phone or refresh the page.</p>
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="progress-stats">
+        <div id="progressText">0%</div>
+        <div id="etaText">ETA: --:--</div>
+        <div id="speedText">Speed: -- MB/s</div>
+      </div>
+      <progress id="progressBar" value="0" max="100" aria-label="Upload progress bar"></progress>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

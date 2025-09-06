@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  wedding-gallery:
+    build: .
+    container_name: wedding-gallery
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
