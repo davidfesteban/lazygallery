@@ -8,11 +8,9 @@
   />
   <title>Taline & David - Hochzeit</title>
   <link rel="stylesheet" href="./styles.css" />
-  <!-- Optional: better font rendering -->
   <meta name="color-scheme" content="dark light">
 </head>
 <body>
-  <!-- Page wrapper for centered content and nicer max-width -->
   <div class="container">
 
     <header class="header">
@@ -20,14 +18,32 @@
         <h2 class="title">Taline &amp; David — Hochzeit</h2>
         <p class="subtitle">Photo &amp; Video Gallery</p>
       </div>
-
-      <!-- Decorative divider -->
       <div class="divider" aria-hidden="true"></div>
     </header>
 
+    <!-- Instruction card (DE + ES, 3 concise points) -->
+    <section class="title-card" aria-label="Upload instructions">
+      <h3 style="margin:0 0 6px 0; font-size:16px;">Hinweise / Instrucciones</h3>
+      <ol style="margin:8px 0 0 18px; padding:0; line-height:1.5;">
+        <li>
+          <strong>DE:</strong> Beim Hochladen warten und die Häkchen beobachten – <em>nicht</em> sperren.<br>
+          <strong>ES:</strong> Al subir, espera y mira las marcas ✓ — <em>no</em> bloquees el móvil.
+          <br></br>
+        </li>
+        <li>
+          <strong>DE:</strong> In kleinen Paketen hochladen (z. B. 10–50 Dateien).<br>
+          <strong>ES:</strong> Sube en tandas pequeñas (p. ej., 10–50 archivos).
+          <br></br>
+        </li>
+        <li>
+          <strong>DE:</strong> Auf dieser Seite bleiben, bis 100 % erreicht sind.<br>
+          <strong>ES:</strong> Permanece en la página hasta llegar al 100 %.
+        </li>
+      </ol>
+    </section>
+
     <main class="main">
       <section id="gallery" class="gallery" aria-live="polite" aria-busy="false"></section>
-      <!-- Infinite-scroll sentinel -->
       <div id="sentinel" class="sentinel" aria-hidden="true"></div>
     </main>
 

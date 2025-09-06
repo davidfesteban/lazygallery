@@ -20,6 +20,9 @@ class GalleryApp {
 
     this.sentinel = document.getElementById('sentinel');
 
+    // Wake Lock handle
+    this.wakeLock = null;
+
     // Paging state
     this.paging = {
       nextOffset: 0,
@@ -61,8 +64,30 @@ class GalleryApp {
     this.wireLightbox();
     this.wireUpload();
 
+    // Keep screen awake while the page is visible
+    this.acquireWakeLock();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') this.acquireWakeLock();
+    });
+    window.addEventListener('pagehide', () => this.releaseWakeLock());
+
     // First load
     this.loadGallery().catch(console.error);
+  }
+
+  // ===== Wake Lock =====
+  async acquireWakeLock() {
+    try {
+      if ('wakeLock' in navigator && !this.wakeLock) {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+        this.wakeLock.addEventListener?.('release', () => { this.wakeLock = null; });
+      }
+    } catch (_) {
+      // ignore if unsupported/denied
+    }
+  }
+  releaseWakeLock() {
+    try { this.wakeLock?.release(); } catch {} finally { this.wakeLock = null; }
   }
 
   // ===== Menu / FAB =====
@@ -108,7 +133,6 @@ class GalleryApp {
       vid.controls = true;
       vid.autoplay = true;   // will play in modal
       vid.playsInline = true;
-      // keep sound user-controlled; default muted off is fine here
       this.lightboxBody.appendChild(vid);
     } else {
       const p = document.createElement('p');
@@ -131,7 +155,7 @@ class GalleryApp {
     });
   }
 
-  // ===== Upload =====
+  // ===== Upload (parallel, full quality) =====
   wireUpload() {
     this.fileInput.addEventListener('change', async () => {
       if (!this.fileInput.files || this.fileInput.files.length === 0) return;
@@ -140,8 +164,13 @@ class GalleryApp {
       await this.loadGallery();  // refresh list from start
     });
   }
+
   async uploadFiles(fileList) {
     const files = Array.from(fileList);
+    const CONCURRENCY = 5; // tune 3–6 for WAN
+
+    // Aggregate progress
+    let uploadedBytes = 0;
     const totalBytes = files.reduce((a, f) => a + f.size, 0);
 
     this.progressBar.value = 0;
@@ -150,38 +179,60 @@ class GalleryApp {
     this.speedText.textContent = 'Speed: -- MB/s';
     this.progressModal.setAttribute('aria-hidden','false');
 
-    const form = new FormData();
-    files.forEach(f => form.append('files', f));
+    const startedAt = Date.now();
+    await this.acquireWakeLock();
 
-    await new Promise((resolve, reject) => {
+    const uploadOne = (file) => new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      const startedAt = Date.now();
+      const form = new FormData();
+      form.append('files', file); // server expects 'files' field
+
       xhr.open('POST', '/api/upload');
 
+      let lastReported = 0;
       xhr.upload.onprogress = (e) => {
         if (!e.lengthComputable) return;
-        const loaded = e.loaded;
-        const pct = Math.round((loaded / totalBytes) * 100);
+        const delta = e.loaded - lastReported;
+        lastReported = e.loaded;
+        uploadedBytes += delta;
+
+        const pct = Math.round((uploadedBytes / totalBytes) * 100);
         this.progressBar.value = pct;
         this.progressText.textContent = `${pct}%`;
 
         const elapsed = (Date.now() - startedAt) / 1000;
-        const speed = loaded / elapsed; // bytes/sec
-        const remaining = totalBytes - loaded;
+        const speed = uploadedBytes / elapsed; // bytes/sec
+        const remaining = totalBytes - uploadedBytes;
         const etaSec = speed > 0 ? Math.round(remaining / speed) : 0;
 
         this.speedText.textContent = `Speed: ${(speed / (1024 * 1024)).toFixed(2)} MB/s`;
         this.etaText.textContent = `ETA: ${GalleryApp.formatEta(etaSec)}`;
       };
 
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(`Upload failed (${xhr.status})`));
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300)
+        ? resolve()
+        : reject(new Error(`Upload failed (${xhr.status})`));
       xhr.onerror = () => reject(new Error('Network error during upload.'));
       xhr.send(form);
-    }).catch(err => {
-      alert(`Upload error: ${err.message}`);
-    }).finally(() => {
-      this.progressModal.setAttribute('aria-hidden','true');
     });
+
+    // Simple worker pool
+    const queue = files.slice();
+    const workers = Array.from({ length: CONCURRENCY }, async () => {
+      while (queue.length) {
+        const f = queue.shift();
+        await uploadOne(f);
+      }
+    });
+
+    try {
+      await Promise.all(workers);
+    } catch (err) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      this.progressModal.setAttribute('aria-hidden','true');
+      this.releaseWakeLock();
+    }
   }
 
   // ===== Pagination / Lazy load grid =====
