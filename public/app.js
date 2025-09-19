@@ -120,12 +120,20 @@ class GalleryApp {
   }
 
   // ===== Lightbox =====
-  openLightbox(kind, url) {
+  openLightbox(item) {
+    const { type: kind, url, previewUrl, name } = item;
     this.lightboxBody.innerHTML = '';
     if (kind === 'image') {
       const img = document.createElement('img');
-      img.src = url;
-      img.alt = 'Image preview';
+      img.alt = name || 'Image preview';
+      img.src = previewUrl || url;
+      if (previewUrl && previewUrl !== url) {
+        const full = new Image();
+        full.src = url;
+        full.addEventListener('load', () => {
+          img.src = url;
+        });
+      }
       this.lightboxBody.appendChild(img);
     } else if (kind === 'video') {
       const vid = document.createElement('video');
@@ -133,6 +141,7 @@ class GalleryApp {
       vid.controls = true;
       vid.autoplay = true;   // will play in modal
       vid.playsInline = true;
+      if (previewUrl) vid.poster = previewUrl;
       this.lightboxBody.appendChild(vid);
     } else {
       const p = document.createElement('p');
@@ -275,9 +284,11 @@ class GalleryApp {
   }
 
   appendItems(items) {
+    const fragment = document.createDocumentFragment();
     for (const it of items) {
       const tile = document.createElement('div');
       tile.className = 'tile';
+      const preview = it.previewUrl || it.url;
 
       let mediaEl;
       if (it.type === 'image') {
@@ -286,7 +297,7 @@ class GalleryApp {
         mediaEl.loading = 'lazy';
         // placeholder to avoid layout shift
         mediaEl.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
-        mediaEl.dataset.src = it.url; // set real src lazily
+        mediaEl.dataset.src = preview; // set preview lazily
       } else if (it.type === 'video') {
         mediaEl = document.createElement('video');
         mediaEl.muted = true;        // allow autoplay for priming
@@ -294,6 +305,7 @@ class GalleryApp {
         mediaEl.playsInline = true;
         mediaEl.preload = 'none';    // switch to metadata when visible
         mediaEl.dataset.src = it.url; // real src set lazily
+        if (it.previewUrl) mediaEl.poster = it.previewUrl;
         mediaEl.addEventListener('mouseenter', () => mediaEl.play());
         mediaEl.addEventListener('mouseleave', () => mediaEl.pause());
       } else {
@@ -317,14 +329,15 @@ class GalleryApp {
 
       tile.appendChild(mediaEl);
       tile.appendChild(badge);
-      tile.addEventListener('click', () => this.openLightbox(it.type, it.url));
-      this.galleryEl.appendChild(tile);
+      tile.addEventListener('click', () => this.openLightbox(it));
+      fragment.appendChild(tile);
 
       // Observe for lazy load (only for those with data-src)
       if (mediaEl.dataset && mediaEl.dataset.src) {
         this.lazyIO.observe(mediaEl);
       }
     }
+    this.galleryEl.appendChild(fragment);
   }
 
   // ===== Video helpers =====

@@ -7,5 +7,7 @@ services:
       - "8080:8080"
     volumes:
       - ./uploads:/app/uploads
+      - ./thumbnails:/app/thumbnails
+      - ./cache:/app/cache
     environment:
       - NODE_ENV=production

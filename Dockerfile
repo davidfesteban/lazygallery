@@ -12,8 +12,8 @@ RUN npm install --omit=dev
 COPY public ./public
 COPY server.js ./
 
-# Ensure uploads directory exists
-RUN mkdir -p /app/uploads
+# Ensure uploads, thumbnails, and cache directories exist for mounted volumes
+RUN mkdir -p /app/uploads /app/thumbnails /app/cache
 
 EXPOSE 8080
 CMD ["node", "server.js"]
