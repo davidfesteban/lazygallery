@@ -1,0 +1,39 @@
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,text/css,text/javascript,application/javascript,application/zip,image/jpeg,image/png,video/mp4
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5GB
+      max-request-size: 5GB
+  web:
+    resources:
+      cache:
+        period: 1d
+  cache:
+    cache-names: inventory
+    caffeine:
+      spec: maximumSize=1,expireAfterWrite=10s
+
+app:
+  storage:
+    endpoint: ${MINIO_ENDPOINT:http://minio:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    secure: ${MINIO_SECURE:false}
+    region: ${MINIO_REGION:us-east-1}
+    bucket-media: ${MINIO_BUCKET_MEDIA:lazygallery-media}
+    bucket-thumbnails: ${MINIO_BUCKET_THUMBNAILS:lazygallery-thumbnails}
+    bucket-archives: ${MINIO_BUCKET_ARCHIVES:lazygallery-archives}
+    thumbnail-width: ${THUMBNAIL_WIDTH:512}
+    thumbnail-height: ${THUMBNAIL_HEIGHT:512}
+    thumbnail-quality: ${THUMBNAIL_QUALITY:80}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

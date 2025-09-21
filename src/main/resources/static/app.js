@@ -121,23 +121,23 @@ class GalleryApp {
 
   // ===== Lightbox =====
   openLightbox(item) {
-    const { type: kind, url, previewUrl, name } = item;
+    const { type: kind, originalUrl, previewUrl, name } = item;
     this.lightboxBody.innerHTML = '';
     if (kind === 'image') {
       const img = document.createElement('img');
       img.alt = name || 'Image preview';
-      img.src = previewUrl || url;
-      if (previewUrl && previewUrl !== url) {
+      img.src = previewUrl || originalUrl;
+      if (previewUrl && previewUrl !== originalUrl) {
         const full = new Image();
-        full.src = url;
+        full.src = originalUrl;
         full.addEventListener('load', () => {
-          img.src = url;
+          img.src = originalUrl;
         });
       }
       this.lightboxBody.appendChild(img);
     } else if (kind === 'video') {
       const vid = document.createElement('video');
-      vid.src = url;
+      vid.src = originalUrl;
       vid.controls = true;
       vid.autoplay = true;   // will play in modal
       vid.playsInline = true;
@@ -288,7 +288,7 @@ class GalleryApp {
     for (const it of items) {
       const tile = document.createElement('div');
       tile.className = 'tile';
-      const preview = it.previewUrl || it.url;
+      const preview = it.previewUrl || it.originalUrl;
 
       let mediaEl;
       if (it.type === 'image') {
@@ -304,7 +304,7 @@ class GalleryApp {
         mediaEl.loop = true;
         mediaEl.playsInline = true;
         mediaEl.preload = 'none';    // switch to metadata when visible
-        mediaEl.dataset.src = it.url; // real src set lazily
+        mediaEl.dataset.src = it.originalUrl; // real src set lazily
         if (it.previewUrl) mediaEl.poster = it.previewUrl;
         mediaEl.addEventListener('mouseenter', () => mediaEl.play());
         mediaEl.addEventListener('mouseleave', () => mediaEl.pause());
